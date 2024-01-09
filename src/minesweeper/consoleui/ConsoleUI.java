@@ -24,6 +24,8 @@ public class ConsoleUI {
      */
     private BufferedReader input = new BufferedReader(new InputStreamReader(System.in));
 
+    private Pattern pattern = Pattern.compile("[OM]([A-Z])([0-9])|[E]");
+
     /**
      * Reads line of text from the reader.
      *
@@ -47,7 +49,15 @@ public class ConsoleUI {
 
         update();
         do {
-            processInput();
+            try {
+                processInput();
+            } catch (WrongFormatException e) {
+                //System.out.println("Nespravny rozsah hracieho pola.");
+                System.out.println(e.getMessage());
+                //System.out.println(System.err);
+                //e.printStackTrace();
+                //throw new RuntimeException(e);
+            }
             update();
 
 
@@ -80,13 +90,12 @@ public class ConsoleUI {
      * Processes user input.
      * Reads line from console and does the action on a playing field according to input string.
      */
-    private void processInput() {
+    private void processInput() throws WrongFormatException {
         System.out.println(inputDescr());
 
-        String input = readLine();
+        String input = readLine().trim().toUpperCase();     //trim oseka medzery na zaciatku a konci retazca; toUpperCase zabezpeci, ze vstup sa bude dat zadavat aj malymi pismenami
 
 
-        Pattern pattern = Pattern.compile("[OM]([A-Z])([0-9])|[E]");
         Matcher matcher = pattern.matcher(input);
 
         if (!matcher.matches()) {
@@ -102,6 +111,12 @@ public class ConsoleUI {
         if (!command.equals("E")) {
             inputRow = matcher.group(1).charAt(0) - 'A';
             inputColumn = Integer.parseInt(matcher.group(2));
+        }
+
+        if (!isInputInBorderOfField(inputRow, inputColumn)){
+            //System.out.println("Nespravny rozsah hracieho pola.");
+            throw new WrongFormatException("Nespravny rozsah hracieho pola.");
+            //return;
         }
 
         if (input.startsWith("O")) {
@@ -128,4 +143,12 @@ public class ConsoleUI {
         return h;
     }
 
+    void handleInput(String input) //throws WrongFormatException
+     {
+
+    }
+
+    private boolean isInputInBorderOfField(int row, int col) {
+        return (col < field.getColumnCount()) && (row < field.getRowCount());
+    }
 }
